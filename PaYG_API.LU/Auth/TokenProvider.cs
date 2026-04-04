@@ -44,7 +44,7 @@ namespace PayingG.LU.API.Auth
 
         private string GenerateAccessToken(UserAccount userAccount)
         {
-            string secretKey = _configuration["IdentityServer:SecretKey"]
+            string secretKey = _configuration["JWT:SecretKey"]
                 ?? throw new InvalidOperationException("Secret key not found in configuration.");
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
@@ -63,8 +63,8 @@ namespace PayingG.LU.API.Auth
                 Subject = new ClaimsIdentity(claims),
                 Expires = DateTime.UtcNow.AddMinutes(30),
                 SigningCredentials = credentials,
-                Issuer = _configuration["IdentityServer:Issuer"],
-                Audience = _configuration["IdentityServer:Audience"]
+                Issuer = _configuration["JWT:Issuer"],
+                Audience = _configuration["JWT:Audience"]
             };
 
             var handler = new JsonWebTokenHandler();

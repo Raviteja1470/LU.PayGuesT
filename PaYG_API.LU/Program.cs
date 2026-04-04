@@ -62,13 +62,13 @@ builder.Services.AddSwaggerGen(options =>
 // -------------------- AUTH --------------------
 
 var key = Encoding.UTF8.GetBytes(
-    builder.Configuration["IdentityServer:SecretKey"]
+    builder.Configuration["JWT:SecretKey"]
 );
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        options.RequireHttpsMetadata = false;
+        options.RequireHttpsMetadata = true;
         options.SaveToken = true;
 
         options.TokenValidationParameters = new TokenValidationParameters
@@ -78,8 +78,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             ValidateLifetime = true,
 
-            ValidIssuer = builder.Configuration["IdentityServer:Issuer"],
-            ValidAudience = builder.Configuration["IdentityServer:Audience"],
+            ValidIssuer = builder.Configuration["JWT:Issuer"],
+            ValidAudience = builder.Configuration["JWT:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(key),
 
             ClockSkew = TimeSpan.Zero

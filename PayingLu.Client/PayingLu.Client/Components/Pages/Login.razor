@@ -1,0 +1,56 @@
+﻿@page "/login"
+@layout EmptyLayout
+
+@rendermode InteractiveServer
+
+@inject AuthService AuthService
+@inject NavigationManager nav
+
+<h1 class="text-center">Sign in to continue</h1>
+
+<div class="container mt-4" style="max-width: 400px;">
+    <input type="text"
+           @bind-value="Email"
+           class="form-control mb-3"
+           placeholder="Email"
+           required
+           autofocus />
+
+    <input type="password"
+           @bind-value="Password"
+           class="form-control mb-3"
+           placeholder="Password"
+           required />
+
+    <button class="btn btn-lg btn-primary btn-block w-100"
+            @onclick="OnLogin">
+        Sign in
+    </button>
+
+    @if (!string.IsNullOrEmpty(ErrorMessage))
+    {
+        <div class="alert alert-danger mt-3">@ErrorMessage</div>
+    }
+</div>
+
+@code {
+    public string Email { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
+    public string? ErrorMessage { get; set; }
+
+    private async Task OnLogin()
+    {
+        ErrorMessage = null;
+
+        var status = await AuthService.Login(Email, Password);
+
+        if (status)
+        {
+            nav.NavigateTo("/");
+        }
+        else
+        {
+            ErrorMessage = "Invalid email or password.";
+        }
+    }
+}
