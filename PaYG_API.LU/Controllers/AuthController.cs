@@ -40,7 +40,7 @@ namespace PayingG.LU.API.Controllers
             return Ok(result.Message);
         }
 
-        [HttpPost]
+        [HttpPost("auth")]
 
         public async Task<ActionResult<AuthResponse>> Login(AuthRequest request)
         {

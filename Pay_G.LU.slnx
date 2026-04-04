@@ -1,3 +1,8 @@
 <Solution>
-  <Project Path="PaYG_API.LU/PaYG_API.LU.csproj" />
+  <Folder Name="/API/">
+    <Project Path="PaYG_API.LU/PaYG_API.LU.csproj" />
+  </Folder>
+  <Folder Name="/Client/">
+    <Project Path="PayingLu.Client/PayingLu.Client/PayingLu.Client.csproj" Id="567d2267-c0a6-4e7a-81ec-08a35420fa64" />
+  </Folder>
 </Solution>

@@ -19,7 +19,7 @@ namespace PayingG.LU.API.Data
 
         public void Dispose()
         {
-           GC.SuppressFinalize(this);
+
         }
 
         public async Task<(bool Success, string Message)> RegisterUserAsync(
