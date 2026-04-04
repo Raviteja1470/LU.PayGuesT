@@ -1,0 +1,6 @@
+@PaYG_API.LU_HostAddress = http://localhost:5055
+
+GET {{PaYG_API.LU_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
