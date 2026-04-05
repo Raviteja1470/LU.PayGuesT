@@ -41,10 +41,9 @@ namespace PayingG.LU.API.Controllers
         }
 
         [HttpPost("auth")]
-
         public async Task<ActionResult<AuthResponse>> Login(AuthRequest request)
         {
-            AuthResponse authResponse = new AuthResponse();
+            // 1. Validate user
             var user = await _appDbContext.UserAccounts
                 .AsNoTracking()
                 .FirstOrDefaultAsync(u => u.Email == request.Email);
@@ -56,18 +55,38 @@ namespace PayingG.LU.API.Controllers
             if (!verifyPassword)
                 return BadRequest("Wrong password!");
 
+            // 2. Generate JWT + Refresh Token
             var token = tokenProvider.GenerateToken(user);
-            authResponse.AccessToken = token.AccessToken;
 
+            // 3. Disable old refresh tokens
             await _dataAccess.DisableUserTokenByEmailAsync(request.Email);
 
-            authResponse.refreshToken = token.RefreshToken;
-             await _dataAccess.AddRefreshTokenAsync(user.Email, token.RefreshToken, DateTime.UtcNow.AddDays(7));
+            // 4. Save new refresh token
+            await _dataAccess.AddRefreshTokenAsync(
+                user.Email,
+                token.RefreshToken,
+                DateTime.UtcNow.AddDays(7)
+            );
 
+            // 5. Set HttpOnly cookie for access token (IMPORTANT)
+            Response.Cookies.Append("access_token", token.AccessToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Expires = DateTime.UtcNow.AddDays(1),
+                Path = "/"
+            });
+
+            // 6. Return response (optional)
+            var authResponse = new AuthResponse
+            {
+                AccessToken = token.AccessToken,
+                refreshToken = token.RefreshToken
+            };
 
             return Ok(authResponse);
         }
-
         [HttpPost("refresh")]
         public async Task<ActionResult<AuthResponse>> RefreshToken()
         {

@@ -20,31 +20,52 @@ namespace PayingLu.Client.Services
             _logger = logger;
             _nav = navigationManager;
         }
-
         public async Task<bool> Login(string email, string password)
         {
             try
             {
                 var response = await _httpClient.PostAsJsonAsync("Auth/auth", new { email, password });
+
                 if (response.IsSuccessStatusCode)
                 {
-                    var token = await response.Content.ReadAsStringAsync();
-                    var result = JsonConvert.DeserializeObject<AuthResponse>(token);
-                    await _accessTokenService.SetToken(result?.AccessToken);
+                    // Cookie is set by API, nothing to store on client
                     return true;
                 }
-                else
-                {
-                    _logger.LogWarning("Login failed: {StatusCode}", response.StatusCode);
-                }
+
+                _logger.LogWarning("Login failed: {StatusCode}", response.StatusCode);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error during login");
             }
+
             return false;
-
-
         }
+
+        //public async Task<bool> Login(string email, string password)
+        //{
+        //    try
+        //    {
+        //        var response = await _httpClient.PostAsJsonAsync("Auth/auth", new { email, password });
+        //        if (response.IsSuccessStatusCode)
+        //        {
+        //            var token = await response.Content.ReadAsStringAsync();
+        //            var result = JsonConvert.DeserializeObject<AuthResponse>(token);
+        //            await _accessTokenService.SetToken(result?.AccessToken);
+        //            return true;
+        //        }
+        //        else
+        //        {
+        //            _logger.LogWarning("Login failed: {StatusCode}", response.StatusCode);
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "Error during login");
+        //    }
+        //    return false;
+
+
+        //}
     }
 }

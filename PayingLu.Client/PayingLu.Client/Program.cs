@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using PayingLu.Client.Components;
 using PayingLu.Client.Security;
 using PayingLu.Client.Services;
+using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,10 +15,26 @@ builder.Services.AddRazorComponents()
 builder.Services.AddScoped<CookieService>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<AccessTokenService>();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddAuthorizationCore();
+builder.Services.AddScoped<AuthenticationStateProvider, JWTAuthenticationStateProvider>();
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient("PayingLuAPI", client =>
 {
     client.BaseAddress = new Uri("https://localhost:44364/api/");
+}).ConfigurePrimaryHttpMessageHandler(() =>
+{
+    return new HttpClientHandler
+    {
+        UseCookies = true,
+        CookieContainer = new CookieContainer()
+    };
 });
+
+//builder.Services.AddHttpClient("PayingLuAPI", client =>
+//{
+//    client.BaseAddress = new Uri("https://localhost:44364/api/");
+//});
 builder.Services.AddAuthentication().AddScheme< AuthenticationSchemeOptions ,JWTAuthenticationHandler>("JWTAuth", options => { });
 
 builder.Services.AddScoped<JWTAuthenticationStateProvider>();
