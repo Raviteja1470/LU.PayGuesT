@@ -1,0 +1,197 @@
+﻿@page "/"
+@attribute [Authorize]
+@rendermode InteractiveServer
+@inject AccessTokenService AccessTokenService
+@inject JWTAuthenticationStateProvider AuthStateProvider
+@inject AuthService authservice
+@inject ResourceService resourceService
+<PageTitle>Home</PageTitle>
+
+<style>
+    .home-bg {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #1e3c72, #2a5298);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        padding: 20px;
+    }
+
+    .home-card {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        padding: 40px;
+        width: 420px;
+        text-align: center;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    }
+
+    .home-title {
+        font-size: 32px;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+
+    .home-sub {
+        font-size: 18px;
+        opacity: 0.9;
+        margin-bottom: 25px;
+    }
+
+    .auth-text {
+        font-size: 20px;
+        font-weight: 600;
+        color: #d4ffd4;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    td {
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .td-value {
+        word-break: break-all;
+        color: #444;
+    }
+
+    h1 {
+        margin-bottom: 10px;
+    }
+</style>
+
+<div class="home-bg">
+    <div class="home-card">
+        <h1 class="home-title">Hello, world!</h1>
+        <p class="home-sub">Welcome to your new app.</p>
+
+       <AuthorizeView>
+    <Authorized>
+        <h1>You are authorized!
+            <button class="btn btn-primary" @onclick="Logout">Logout</button>
+        </h1>
+
+        <hr />
+
+        <h3>User Information:</h3>
+
+        <table>
+            <tr>
+                <td style="width:200px">Email</td>
+                <td>@Email</td>
+            </tr>
+            <tr>
+                <td>Role</td>
+                <td>@Role</td>
+            </tr>
+            <tr>
+                <td>Access Token</td>
+                <td class="td-value">@Token</td>
+            </tr>
+            <tr>
+                <td>Date Time Expired</td>
+                <td>@TokenExpired</td>
+            </tr>
+            <tr>
+                <td>Date Time Now</td>
+                <td>@currentTime</td>
+            </tr>
+        </table>
+    </Authorized>
+</AuthorizeView>
+        <button class="btn btn-success mt-2" @onclick="VerifyGetRequest">Verify</button>
+
+        <h1 class="text-success mt-2">
+            @if (IsVerified == true)
+            {
+                <span>Success!</span>
+            }
+            else if (IsVerified == false)
+            {
+                <span>Failed!</span>
+            }
+        </h1>
+
+
+    </div>
+</div>
+
+@code {
+    public string Email { get; set; }
+    public string Role { get; set; }
+    public string Token { get; set; }
+    public DateTime TokenExpired { get; set; }
+    public DateTime currentTime { get; set; }
+    public bool IsVerified { get; set; }
+
+
+    private Timer timer;
+
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        timer = new Timer(updateclock, null, 0, 1000);
+
+        if (firstRender)
+        {
+            _ = InitialValues();
+        }
+        return base.OnAfterRenderAsync(firstRender);
+
+    }
+    // protected override async Task OnInitializedAsync()
+    // {
+    //     await InitialValues();
+    //     timer = new Timer(updateclock, null, 0, 1000);
+    // }
+
+    private async Task InitialValues()
+    {
+        var state = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = state.User;
+
+        if (user.Identity != null && user.Identity.IsAuthenticated)
+        {
+            Token = await AccessTokenService.GetToken();
+
+            // FIXED: use actual claim names from your JWT
+            Email = user.Claims.FirstOrDefault(x => x.Type == "email")?.Value;
+            Role = user.Claims.FirstOrDefault(x => x.Type == "role")?.Value;
+
+            // Expiration (exp claim is Unix timestamp)
+            var expires = user.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Exp)?.Value;
+            if (long.TryParse(expires, out var exp))
+            {
+                TokenExpired = DateTimeOffset.FromUnixTimeSeconds(exp).LocalDateTime;
+            }
+
+
+            currentTime = DateTime.Now;
+        }
+        // 🔥 THIS IS THE IMPORTANT PART
+        StateHasChanged();
+
+    }
+
+    private async Task Logout()
+    {
+        await authservice.Logout();
+    }
+
+    private async Task VerifyGetRequest()
+    {
+        IsVerified = await resourceService.Verify();
+        await InitialValues();
+    }
+    private void updateclock(object state)
+    {
+        currentTime = DateTime.Now;
+        InvokeAsync(StateHasChanged);
+    }
+}

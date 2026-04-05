@@ -65,26 +65,53 @@ var key = Encoding.UTF8.GetBytes(
     builder.Configuration["JWT:SecretKey"]
 );
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
     {
-        options.RequireHttpsMetadata = true;
-        options.SaveToken = true;
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
 
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateIssuerSigningKey = true,
-            ValidateLifetime = true,
+        ValidIssuer = builder.Configuration["JWT:Issuer"],
+        ValidAudience = builder.Configuration["JWT:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(builder.Configuration["JWT:SecretKey"])),
 
-            ValidIssuer = builder.Configuration["JWT:Issuer"],
-            ValidAudience = builder.Configuration["JWT:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(key),
+        RoleClaimType = "role",
+        NameClaimType = "email"
+    };
+});
 
-            ClockSkew = TimeSpan.Zero
-        };
-    });
+//builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+//    .AddJwtBearer(options =>
+//    {
+//        options.RequireHttpsMetadata = true;
+//        options.SaveToken = true;
+
+//        options.TokenValidationParameters = new TokenValidationParameters
+//        {
+//            RoleClaimType = "role",
+//            NameClaimType = "email",
+
+//            ValidateIssuer = true,
+//            ValidateAudience = true,
+//            ValidateIssuerSigningKey = true,
+//            ValidateLifetime = true,
+
+//            ValidIssuer = builder.Configuration["JWT:Issuer"],
+//            ValidAudience = builder.Configuration["JWT:Audience"],
+//            IssuerSigningKey = new SymmetricSecurityKey(key),
+
+//            ClockSkew = TimeSpan.Zero
+//        };
+//    });
 
 builder.Services.AddAuthorization();
 

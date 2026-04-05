@@ -3,6 +3,6 @@
     <Project Path="PaYG_API.LU/PaYG_API.LU.csproj" />
   </Folder>
   <Folder Name="/Client/">
-    <Project Path="PayingLu.Client/PayingLu.Client/PayingLu.Client.csproj" Id="567d2267-c0a6-4e7a-81ec-08a35420fa64" />
+    <Project Path="PaYClient.LU/PaYClient.LU.csproj" Id="5f525eb3-f8cc-4bcc-baa4-e47217bf61cf" />
   </Folder>
 </Solution>
