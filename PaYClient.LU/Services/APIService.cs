@@ -26,7 +26,7 @@ namespace PaYClient.LU.Services
 
         public async Task<HttpResponseMessage> GetAsync(string endpoint)
         {
-            // Get current access token
+            // Get current access token 
             var token = await tokenService.GetToken();
 
             // Attach token to request
